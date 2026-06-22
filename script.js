@@ -95,10 +95,39 @@ function displayQuestion() {
         if (currentQuestionIndex < quizData.results.length - 1) {
             currentQuestionIndex++;
             displayQuestion();
+        } else {
+            checkAnswers();
         }
     });
 
     controls.appendChild(prevBtn);
     controls.appendChild(nextBtn);
     container.appendChild(controls);
+}
+
+function checkAnswers() { // this function took, like, two days for me to get it working so plz don't complain about my messy code, alright? come onnn pal, i even put scoring in heereee
+   const correctAnswers = quizData.results.map(q => q.correct_answer);
+   const resultsContainer = document.createElement('div');
+   resultsContainer.className = 'results';
+     let score = 0;
+     quizData.results.forEach((q, i) => {
+             const selected = selectedAnswers[i] || null;
+             const correct = correctAnswers[i];
+             const item = document.createElement('div');
+             item.className = 'result-item';
+             const status = selected === correct ? 'Correct' : 'Incorrect';
+             if (selected === correct) score++;
+             item.innerHTML = `<p class="question-text">${q.question}</p>` +
+                                     `<p>Selected: ${selected === null ? '<em>None</em>' : selected}</p>
+                                      <p>Correct: ${correct}</p>
+                                      <p>${status}</p>`;
+             resultsContainer.appendChild(item);
+     });
+
+     container.innerHTML = '';
+     const summary = document.createElement('div');
+     summary.className = 'summary';
+     summary.innerHTML = `<h2>Score: ${score} / ${quizData.results.length}</h2>`;
+     container.appendChild(summary);
+     container.appendChild(resultsContainer);
 }
