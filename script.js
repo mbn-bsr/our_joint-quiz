@@ -1,49 +1,104 @@
+let container;
+let quizData = null;
+let currentQuestionIndex = 0;
+let amountOfQs = 10;
+let selectedAnswers = [];
+
 document.addEventListener("DOMContentLoaded", () => {
-    const container = document.createElement("div");
+    container = document.createElement("div");
     container.id = "container";
     document.body.appendChild(container);
 
-    let qNum = 5;
-    let category = 14;
-    let type = "multiple";
-
-    fetch(`https://opentdb.com/api.php?amount=10`)
-    .then(response => response.json())
-    .then(data => {
-        container.innerHTML = '';
-        for (let i = 0; i < data.results.length; i++) {
-            var question = document.createElement("p");
-            question.id = `question-${i}`; 
-            question.classList.add("question-text");
-            question.innerHTML = data.results[i].question;
-            container.appendChild(question);
-            
-            var correct_answer = data.results[i].correct_answer;
-            var wrong_answers = data.results[i].incorrect_answers;
-            var answers = [...wrong_answers, correct_answer]; 
-
-            answers = answers.sort(() => Math.random() - 0.5);
-
-            var answerBtns = answers.map(a => `<label style="display: block; margin-bottom: 6px; cursor: pointer;">
-                    <input type="radio" name="question-${i}" value="${a}">
-                    ${a}
-        </label>`).join("");
-    
-            question.insertAdjacentHTML("afterend", 
-                `<div class="answers-container" style="margin-top: 12px; display: flex; gap: 5px;">${answerBtns}</div>`
-            );
-            var prevBtn = document.createElement("button");
-            prevBtn.id = "prev-btn";
-            prevBtn.innerText = "Previous";
-            container.appendChild(prevBtn);
-            var nextBtn = document.createElement("button");
-            nextBtn.id = "submit-btn";
-            nextBtn.innerText = "Next";
-            container.appendChild(nextBtn);
-        }
-    })
-    .catch(error => {
-        console.error(error);
-        container.innerHTML = "API lagging. Refresh page";
-    });
+    fetch(`https://opentdb.com/api.php?amount=${amountOfQs}&category=31`)
+        .then(response => response.json())
+        .then(data => {
+            quizData = data;
+            container.onclick = (e) => {
+                if (e.target.tagName === "LABEL") {
+                    const input = e.target.querySelector("input");
+                    if (!input) return;
+                    const otherSelected = Array.from(document.getElementsByName(input.name))
+                        .some(radio => radio.checked && radio !== input); 
+                            // found this weird function on stack overflow, and i'm still not entirely sure how to use it. i get that it's used for arrays, and that it basically checks if the callback function (you pass that as a parameter) returns true for any of the elements in the array. so, i guess i kinda get why this is super helpful here 'cause it's checking if any of the elements in the array have been selected while you're on the same index. but still, gotta check it out real time.
+                    if (!otherSelected) {
+                        selectedAnswers.push(e.target);
+                    }
+                }
+            };
+            displayQuestion();
+        })
+        .catch(error => {
+            console.error(error);
+            container.innerHTML = "API sleeping. Refresh page";
+        });
 });
+
+function displayQuestion() {
+    if (!quizData || !quizData.results || quizData.results.length === 0) { // dude, what does it take to CHECK FOR NOTHING?!
+        container.innerHTML = "No questions available. A.K.A. API sleeping. Refresh page.";
+        return;
+    }
+
+    const q = quizData.results[currentQuestionIndex];
+    container.innerHTML = "";
+
+    const question = document.createElement("p");
+    question.className = "question-text"; // so yeah, this is actually a thing btw. idk if it's something i'm legitimately supposed to do (like, is it an ancient greek property) but hey, it didn't break my code.
+    question.innerHTML = q.question;
+    container.appendChild(question);
+
+    const correct_answer = q.correct_answer;
+    const wrong_answers = q.incorrect_answers || [];
+    let answers = [...wrong_answers, correct_answer];
+    answers = answers.sort(() => Math.random() - 0.5);
+
+    const answersContainer = document.createElement("div");
+    answersContainer.classList.add("answers-container");
+
+    answers.forEach((a) => {
+        const label = document.createElement("label");
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = `question-${currentQuestionIndex}`;
+        input.value = a;
+        if (selectedAnswers[currentQuestionIndex] === a) {
+            input.checked = true;
+        }
+        input.addEventListener("change", () => {
+            selectedAnswers[currentQuestionIndex] = a;
+            console.log(selectedAnswers);
+        });
+
+        label.appendChild(input);
+        label.insertAdjacentHTML("beforeend", ` ${a}`);
+        answersContainer.appendChild(label);
+    });
+
+    container.appendChild(answersContainer);
+
+    const controls = document.createElement("div");
+    controls.classList.add("controls");
+
+    const prevBtn = document.createElement("button");
+    prevBtn.id = "prev-btn";
+    prevBtn.innerText = "Previous";
+    if (currentQuestionIndex === 0) prevBtn.disabled = "true";
+    prevBtn.addEventListener("click", () => {
+        currentQuestionIndex = Math.max(0, currentQuestionIndex - 1); // another weird function, but this time i kinda get what it does. basically, it compares two 'numbers' and returns the larger one. soooo, i used it so that it doesn't start going to negative indexes 'cause yeah, it literally did just that.
+        displayQuestion();
+    });
+
+    const nextBtn = document.createElement("button");
+    nextBtn.id = "next-btn";
+    nextBtn.innerText = currentQuestionIndex === quizData.results.length - 1 ? "Finish" : "Next";
+    nextBtn.addEventListener("click", () => {
+        if (currentQuestionIndex < quizData.results.length - 1) {
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+    });
+
+    controls.appendChild(prevBtn);
+    controls.appendChild(nextBtn);
+    container.appendChild(controls);
+}
