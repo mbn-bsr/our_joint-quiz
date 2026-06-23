@@ -3,23 +3,25 @@ let quizData = null;
 let currentQuestionIndex = 0;
 let amountOfQs = 10;
 let selectedAnswers = [];
+const loader = `<div id="loader"></div>`;
 
+container = document.createElement("div");
+container.id = "container";
+document.body.appendChild(container);
 document.addEventListener("DOMContentLoaded", () => {
-    container = document.createElement("div");
-    container.id = "container";
-    document.body.appendChild(container);
-
     fetch(`https://opentdb.com/api.php?amount=${amountOfQs}&category=31`)
         .then(response => response.json())
         .then(data => {
+            if (!data || !data.results || data.results.length === 0) {
+                throw new Error("Invalid quiz data received");
+            }
             quizData = data;
             container.onclick = (e) => {
                 if (e.target.tagName === "LABEL") {
                     const input = e.target.querySelector("input");
                     if (!input) return;
                     const otherSelected = Array.from(document.getElementsByName(input.name))
-                        .some(radio => radio.checked && radio !== input); 
-                            // found this weird function on stack overflow, and i'm still not entirely sure how to use it. i get that it's used for arrays, and that it basically checks if the callback function (you pass that as a parameter) returns true for any of the elements in the array. so, i guess i kinda get why this is super helpful here 'cause it's checking if any of the elements in the array have been selected while you're on the same index. but still, gotta check it out real time.
+                        .some(radio => radio.checked && radio !== input); // found this weird function on stack overflow, and i'm still not entirely sure how to use it. i get that it's used for arrays, and that it basically checks if the callback function (you pass that as a parameter) returns true for any of the elements in the array. so, i guess i kinda get why this is super helpful here 'cause it's checking if any of the other elements in the options have been selected in the same index you're on. but still, gotta check it out real time.
                     if (!otherSelected) {
                         selectedAnswers.push(e.target);
                     }
@@ -29,22 +31,21 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch(error => {
             console.error(error);
-            container.innerHTML = "API sleeping. Refresh page";
+            container.innerHTML = loader;
+            container.innerHTML += "<p style='color: red;'>Failed to load quiz data. Refreshing page...</p>";
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
         });
 });
 
 function displayQuestion() {
-    if (!quizData || !quizData.results || quizData.results.length === 0) { // dude, what does it take to CHECK FOR NOTHING?!
-        container.innerHTML = "No questions available. A.K.A. API sleeping. Refresh page.";
-        return;
-    }
-
     const q = quizData.results[currentQuestionIndex];
     container.innerHTML = "";
 
     const question = document.createElement("p");
-    question.className = "question-text"; // so yeah, this is actually a thing btw. idk if it's something i'm legitimately supposed to do (like, is it an ancient greek property) but hey, it didn't break my code.
-    question.innerHTML = q.question;
+    question.className = "question-text"; // so yeah, this is actually a thing btw. idk if it's something i'm legitimately allowed to do (like, is it an ancient greek property) but hey, it didn't break my code.
+    question.innerHTML = `<b>Question ${currentQuestionIndex + 1}:</b> ${q.question}`;
     container.appendChild(question);
 
     const correct_answer = q.correct_answer;
@@ -81,7 +82,7 @@ function displayQuestion() {
 
     const prevBtn = document.createElement("button");
     prevBtn.id = "prev-btn";
-    prevBtn.innerText = "Previous";
+    prevBtn.innerText = "Prev";
     if (currentQuestionIndex === 0) prevBtn.disabled = "true";
     prevBtn.addEventListener("click", () => {
         currentQuestionIndex = Math.max(0, currentQuestionIndex - 1); // another weird function, but this time i kinda get what it does. basically, it compares two 'numbers' and returns the larger one. soooo, i used it so that it doesn't start going to negative indexes 'cause yeah, it literally did just that.
@@ -105,8 +106,9 @@ function displayQuestion() {
     container.appendChild(controls);
 }
 
-function checkAnswers() { // this function took, like, two days for me to get it working so plz don't complain about my messy code, alright? come onnn pal, i even put scoring in heereee
+function checkAnswers() { // this function took, like, two days for me to get it working so plz don't complain about my messy code, alright?
    const correctAnswers = quizData.results.map(q => q.correct_answer);
+   container.style.height = "630px";
    const resultsContainer = document.createElement('div');
    resultsContainer.className = 'results';
      let score = 0;
@@ -118,16 +120,15 @@ function checkAnswers() { // this function took, like, two days for me to get it
              const status = selected === correct ? 'Correct' : 'Incorrect';
              if (selected === correct) score++;
              item.innerHTML = `<p class="question-text">${q.question}</p>` +
-                                     `<p>Selected: ${selected === null ? '<em>None</em>' : selected}</p>
-                                      <p>Correct: ${correct}</p>
-                                      <p>${status}</p>`;
+                                                `<p style="color: ${status === "Correct" ? "#005e0d" : "#840000"}">Your Answer: ${selected === null ? '<em>None</em>' : selected}</p>` +
+                                                `<p>Correct Answer: ${correct}</p>`;
              resultsContainer.appendChild(item);
      });
 
      container.innerHTML = '';
      const summary = document.createElement('div');
      summary.className = 'summary';
-     summary.innerHTML = `<h2>Score: ${score} / ${quizData.results.length}</h2>`;
+     summary.innerHTML = `<h2>Score: ${score} / ${quizData.results.length} | ${score === quizData.results.length ? "Perfect!" : score >= quizData.results.length / 2 ? "Good Job!" : "Better Luck Next Time!"}</h2>`;
      container.appendChild(summary);
      container.appendChild(resultsContainer);
 }
