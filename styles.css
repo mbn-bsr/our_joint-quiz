@@ -1,43 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito');
+
 * {
-    font-family: sans-serif;
+    font-family: Nunito;
 }
 
 body {
     background-color: #fbfdff;
 	overflow-y: hidden;
+	padding: 20px;
 }
 
 #container {
-	max-width: fit-content;
+	min-width: fit-content;
 	min-height: 200px;
 	margin: auto;
+	margin-top: 7%;
+	text-align: center;
 	padding: 20px;
 	background-color: #fdfeff;
 	border-radius: 8px;
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 	overflow-y: auto;
+	transition: display 0.3s linear;
 }
 
 .question-text {
     color: darkblue;
 }
 
-.answers-container {
-    margin-top: 12px;
+.results {
+	margin-top: 0;
 }
 
 label {
     display: flex;
     align-items: center;
     cursor: pointer;
-    margin-bottom: 5px;
     gap: 5px;
+	margin: auto;
+	/* margin-bottom: 10px; */
+	padding: 7px;
 }
 
 input[type=radio] {
     vertical-align: middle;
     flex: 0 0 auto;
-    accent-color: rgb(46, 42, 127);
+    accent-color: #00006b;
 }
 
 .controls {
@@ -46,21 +54,24 @@ input[type=radio] {
 	text-align: center;
 	position: fixed;
 	left: 50%;
-	bottom: 55%;
+	bottom: 31%;
 	transform: translateX(-50%);
 }
 
-.controls button {
-    margin: 2px;
-    margin-top: 12px;
+button {
     padding: 10px 15px;
     border-radius: 5px;
-    background-color: rgb(0, 0, 107);
+    background-color: #00006b;
     border: 0;
     color: white;
     transition: 0.1s linear;
     cursor: pointer;
     opacity: 0.8;
+}
+
+.controls button, #button {
+	margin: 2px;
+	margin-top: 23px;
 }
 
 button:disabled {
@@ -73,16 +84,15 @@ button:hover {
 }
 
 #container #loader {
-	position: fixed;
-	left: 50%;
-	top: 50%;
 	z-index: 1;
 	width: 70px;
 	height: 70px;
-	margin: -47px 0 0 -47px;
+	/* margin: -47px 0 0 -47px; */
+	margin: auto;
+	margin-top: 33px;
 	border: 12px solid #f3f3f3;
 	border-radius: 50%;
-	border-top: 12px solid darkblue;
+	border-top: 12px solid #00006b;
 	-webkit-animation: spin 2s linear infinite;
 	animation: spin 2s linear infinite;
 }
@@ -149,4 +159,73 @@ button:hover {
 
 .result-item:hover {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#logo {
+	width: 4.3%;
+	display: block;
+	position: absolute;
+	top: 7px;
+	left: 7px;
+	border-radius: 50%;
+	box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.401);
+	transition: 0.25s linear;
+}
+
+#logo:hover {
+	width: 5%;
+	box-shadow: 3px 2px 4px rgba(0, 0, 0, 0.605);
+}
+
+@keyframes fadeIn {
+	from {
+		bottom: -100px;
+		opacity: 0;
+	}
+
+	to {
+		bottom: 0;
+		opacity: 1;
+	}
+}
+
+@keyframes moveUp {
+	0% {
+		top: 30px;
+	}
+
+	100% {
+		top: 7px;
+	}
+}
+
+#number, #category {
+	padding: 8px;
+	width: 90%;
+	border-radius: 4px;
+	border: 1px solid #a0a0a0;
+	margin-bottom: 10px;
+}
+
+#number {
+	font-style: italic;
+}
+
+#number:focus, #category:focus {
+	outline: none;
+	border: 2px solid #b0b9ff;
+}
+
+#category {
+	background-color: #fdfeff;
+	width: 94%;
+}
+
+#category optgroup {
+	color: #00006b;
+	font-style: normal;
+}
+
+#category option {
+	color: black;
 }
