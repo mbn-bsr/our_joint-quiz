@@ -1,15 +1,79 @@
 let container;
 let quizData = null;
 let currentQuestionIndex = 0;
-let amountOfQs = 10;
 let selectedAnswers = [];
 const loader = `<div id="loader"></div>`;
+const customizer = `
+        <div id="customizer">
+            <h2>Customize Quiz</h2>
+            <p>Category:</p>
+        <select id="category">
+            <option value=" ">Any Category</option>
+			<optgroup label="Entertainment">
+                    <option value="16">Board Games</option>
+				    <option value="10">Books</option>
+					<option value="32">Cartoons & Animations</option>
+					<option value="29">Comics</option>
+				    <option value="11">Film</option>
+					<option value="31">Japanese Anime & Manga</option>
+				    <option value="12">Music</option>
+					<option value="13">Musicals & Theatres</option>
+					<option value="14">Television</option>
+					<option value="15">Video Games</option>
+			</optgroup>
+			<optgroup label="Science">
+                    <option value="18">Computers</option>
+					<option value="30">Gadgets</option>
+					<option value="19">Mathematics</option>
+					<option value="17">Science & Nature</option>
+			</optgroup>
+			<optgroup label="General">
+                    <option value="27">Animals</option>
+					<option value="25">Art</option>
+					<option value="26">Celebrities</option>
+					<option value="9">General Knowledge</option>
+					<option value="22">Geography</option>
+					<option value="23">History</option>
+					<option value="20">Mythology</option>
+					<option value="24">Politics</option>
+					<option value="21">Sports</option>
+					<option value="28">Vehicles</option>
+			</optgroup>
+			</select>
+
+            <p>Questions:</p>
+            <input type="number" min="5" max="30" id="number" value="10">
+            
+            <button id="button">Start Quiz</button>
+    </div>
+`;
 
 container = document.createElement("div");
 container.id = "container";
 document.body.appendChild(container);
+
+const logo = document.createElement("img");
+logo.id = "logo";
+logo.src = "neon-galaxy-portal-stockcake.jpg"; // will try to find a better logo later
+document.body.appendChild(logo);
+
 document.addEventListener("DOMContentLoaded", () => {
-    fetch(`https://opentdb.com/api.php?amount=${amountOfQs}&category=31`)
+    logo.style.animation = "moveUp 1s ease, fadeIn 1.5s ease";
+    container.innerHTML = customizer;
+    document.getElementById("customizer").style.animation = "fadeIn 0.5s ease";
+    container.style.width = "26%";
+    container.onclick = (e) => {
+        if (e.target.tagName === "BUTTON") {
+            fetchQuiz();
+        }
+    }
+});
+
+
+function fetchQuiz() {
+    const qs = document.querySelector("#number").value;
+    const category = document.querySelector("#category").value;
+    fetch(`https://opentdb.com/api.php?amount=${qs}&category=${category}`)
         .then(response => response.json())
         .then(data => {
             if (!data || !data.results || data.results.length === 0) {
@@ -31,18 +95,19 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch(error => {
             console.error(error);
-            container.innerHTML = loader;
-            container.innerHTML += "<p style='color: red;'>Failed to load quiz data. Refreshing page...</p>";
+            container.innerHTML = "<p style='color: red;'>Failed to load quiz data. Refreshing page...</p>";
+            container.innerHTML += loader;
+            logo.style.display = "none";
             setTimeout(() => {
                 location.reload();
             }, 2000);
         });
-});
+}
 
 function displayQuestion() {
     const q = quizData.results[currentQuestionIndex];
     container.innerHTML = "";
-
+    container.style.animation = "fadeIn 0.4s linear";
     const question = document.createElement("p");
     question.className = "question-text"; // so yeah, this is actually a thing btw. idk if it's something i'm legitimately allowed to do (like, is it an ancient greek property) but hey, it didn't break my code.
     question.innerHTML = `<b>Question ${currentQuestionIndex + 1}:</b> ${q.question}`;
@@ -71,7 +136,7 @@ function displayQuestion() {
         });
 
         label.appendChild(input);
-        label.insertAdjacentHTML("beforeend", ` ${a}`);
+        label.insertAdjacentHTML("beforeend", `${a}`);
         answersContainer.appendChild(label);
     });
 
@@ -108,7 +173,9 @@ function displayQuestion() {
 
 function checkAnswers() { // this function took, like, two days for me to get it working so plz don't complain about my messy code, alright?
    const correctAnswers = quizData.results.map(q => q.correct_answer);
-   container.style.height = "630px";
+   container.style.height = "620px";
+   container.style.width = "550px";
+   container.style.marginTop = "-13px";
    const resultsContainer = document.createElement('div');
    resultsContainer.className = 'results';
      let score = 0;
@@ -119,16 +186,16 @@ function checkAnswers() { // this function took, like, two days for me to get it
              item.className = 'result-item';
              const status = selected === correct ? 'Correct' : 'Incorrect';
              if (selected === correct) score++;
-             item.innerHTML = `<p class="question-text">${q.question}</p>` +
-                                                `<p style="color: ${status === "Correct" ? "#005e0d" : "#840000"}">Your Answer: ${selected === null ? '<em>None</em>' : selected}</p>` +
-                                                `<p>Correct Answer: ${correct}</p>`;
+             item.innerHTML = `<p class="question-text">${q.question}</p>
+                              <p style="color: ${status === "Correct" ? "#005e0d" : "#840000"}">Your Answer: ${selected === null ? '<em>None</em>' : selected}</p>
+                              <p>Correct Answer: ${correct}</p>`;
              resultsContainer.appendChild(item);
      });
 
      container.innerHTML = '';
      const summary = document.createElement('div');
      summary.className = 'summary';
-     summary.innerHTML = `<h2>Score: ${score} / ${quizData.results.length} | ${score === quizData.results.length ? "Perfect!" : score >= quizData.results.length / 2 ? "Good Job!" : "Better Luck Next Time!"}</h2>`;
-     container.appendChild(summary);
+     summary.innerHTML = `<h2>Score: ${score} / ${quizData.results.length} | <button onclick="location.reload()">Play Another</button></h2>`;
+     container.appendChild(summary)
      container.appendChild(resultsContainer);
 }
