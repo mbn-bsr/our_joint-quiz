@@ -76,8 +76,8 @@ function fetchQuiz() {
     fetch(`https://opentdb.com/api.php?amount=${qs}&category=${category}`)
         .then(response => response.json())
         .then(data => {
-            if (!data || !data.results || data.results.length === 0) {
-                throw new Error("Invalid quiz data received");
+            if (!data || !data.results || data.results.length === 0) { // dude, how much does it take to CHECK FOR NOTHING?!
+                throw new Error("Invalid quiz data received"); 
             }
             quizData = data;
             container.onclick = (e) => {
