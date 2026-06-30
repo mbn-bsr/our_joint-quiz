@@ -7,9 +7,9 @@ const customizer = `
         <div id="customizer">
             <h2>Customize Quiz</h2>
             <p>Category:</p>
-        <select id="category">
-            <option value=" ">Any Category</option>
-			<optgroup label="Entertainment">
+            <select id="category">
+                <option value=" ">Any Category</option>
+			    <optgroup label="Entertainment">
                     <option value="16">Board Games</option>
 				    <option value="10">Books</option>
 					<option value="32">Cartoons & Animations</option>
@@ -20,14 +20,14 @@ const customizer = `
 					<option value="13">Musicals & Theatres</option>
 					<option value="14">Television</option>
 					<option value="15">Video Games</option>
-			</optgroup>
-			<optgroup label="Science">
+			    </optgroup>
+			    <optgroup label="Science">
                     <option value="18">Computers</option>
 					<option value="30">Gadgets</option>
 					<option value="19">Mathematics</option>
 					<option value="17">Science & Nature</option>
-			</optgroup>
-			<optgroup label="General">
+			    </optgroup>
+			    <optgroup label="General">
                     <option value="27">Animals</option>
 					<option value="25">Art</option>
 					<option value="26">Celebrities</option>
@@ -38,11 +38,11 @@ const customizer = `
 					<option value="24">Politics</option>
 					<option value="21">Sports</option>
 					<option value="28">Vehicles</option>
-			</optgroup>
+			    </optgroup>
 			</select>
 
             <p>Questions:</p>
-            <input type="number" min="5" max="30" id="number" value="10">
+            <input type="number" min="5" max="30" id="number" value="10" step="5">
             
             <button id="button">Start Quiz</button>
     </div>
@@ -100,7 +100,7 @@ function fetchQuiz() {
             logo.style.display = "none";
             setTimeout(() => {
                 location.reload();
-            }, 2000);
+            }, 3000);
         });
 }
 
@@ -110,7 +110,7 @@ function displayQuestion() {
     container.style.animation = "fadeIn 0.4s linear";
     const question = document.createElement("p");
     question.className = "question-text"; // so yeah, this is actually a thing btw. idk if it's something i'm legitimately allowed to do (like, is it an ancient greek property) but hey, it didn't break my code.
-    question.innerHTML = `<b>Question ${currentQuestionIndex + 1}:</b> ${q.question}`;
+    question.innerHTML = `<b>Q${currentQuestionIndex + 1}:</b> ${q.question}`;
     container.appendChild(question);
 
     const correct_answer = q.correct_answer;
@@ -147,7 +147,7 @@ function displayQuestion() {
 
     const prevBtn = document.createElement("button");
     prevBtn.id = "prev-btn";
-    prevBtn.innerText = "Prev";
+    prevBtn.innerText = "◂ Prev";
     if (currentQuestionIndex === 0) prevBtn.disabled = "true";
     prevBtn.addEventListener("click", () => {
         currentQuestionIndex = Math.max(0, currentQuestionIndex - 1); // another weird function, but this time i kinda get what it does. basically, it compares two 'numbers' and returns the larger one. soooo, i used it so that it doesn't start going to negative indexes 'cause yeah, it literally did just that.
@@ -156,7 +156,7 @@ function displayQuestion() {
 
     const nextBtn = document.createElement("button");
     nextBtn.id = "next-btn";
-    nextBtn.innerText = currentQuestionIndex === quizData.results.length - 1 ? "Finish" : "Next";
+    nextBtn.innerText = currentQuestionIndex === quizData.results.length - 1 ? "Finish ▸" : "Next ▸";
     nextBtn.addEventListener("click", () => {
         if (currentQuestionIndex < quizData.results.length - 1) {
             currentQuestionIndex++;
@@ -173,10 +173,11 @@ function displayQuestion() {
 
 function checkAnswers() { // this function took, like, two days for me to get it working so plz don't complain about my messy code, alright?
    const correctAnswers = quizData.results.map(q => q.correct_answer);
-   container.style.height = "620px";
+   const resultsContainer = document.createElement('div');
+//    resultsContainer.style.height = "500px";
    container.style.width = "550px";
    container.style.marginTop = "-13px";
-   const resultsContainer = document.createElement('div');
+   container.style.padding = "10px";
    resultsContainer.className = 'results';
      let score = 0;
      quizData.results.forEach((q, i) => {
