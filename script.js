@@ -2,7 +2,9 @@ let container;
 let quizData = null;
 let currentQuestionIndex = 0;
 let selectedAnswers = [];
-const loader = `<div id="loader"></div>`;
+const loader = `<div id="loader">
+  <span></span><span></span><span></span>
+</div>`;
 const customizer = `
         <div id="customizer">
             <h2>Customize Quiz</h2>
@@ -61,7 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
     logo.style.animation = "moveUp 1s ease, fadeIn 1.5s ease";
     container.innerHTML = customizer;
     document.getElementById("customizer").style.animation = "fadeIn 0.5s ease";
-    container.style.width = "26%";
+    container.style.width = "90%";
+    container.style.maxWidth = "600px";
     container.onclick = (e) => {
         if (e.target.tagName === "BUTTON") {
             fetchQuiz();
@@ -144,7 +147,7 @@ function displayQuestion() {
 
     const controls = document.createElement("div");
     controls.classList.add("controls");
-
+    controls.id = "controls";
     const prevBtn = document.createElement("button");
     prevBtn.id = "prev-btn";
     prevBtn.innerText = "◂ Prev";
@@ -157,26 +160,28 @@ function displayQuestion() {
     const nextBtn = document.createElement("button");
     nextBtn.id = "next-btn";
     nextBtn.innerText = currentQuestionIndex === quizData.results.length - 1 ? "Finish ▸" : "Next ▸";
+    controls.appendChild(prevBtn);
+    controls.appendChild(nextBtn);
+    container.appendChild(controls);
     nextBtn.addEventListener("click", () => {
         if (currentQuestionIndex < quizData.results.length - 1) {
             currentQuestionIndex++;
             displayQuestion();
         } else {
+            document.querySelectorAll('.controls').forEach(el => el.remove());
             checkAnswers();
         }
     });
-
-    controls.appendChild(prevBtn);
-    controls.appendChild(nextBtn);
-    container.appendChild(controls);
+    
 }
 
 function checkAnswers() { // this function took, like, two days for me to get it working so plz don't complain about my messy code, alright?
    const correctAnswers = quizData.results.map(q => q.correct_answer);
    const resultsContainer = document.createElement('div');
 //    resultsContainer.style.height = "500px";
-   container.style.width = "550px";
-   container.style.marginTop = "-13px";
+   container.style.width = "90%";
+   container.style.maxWidth = "600px";
+   container.style.marginTop = "13px";
    container.style.padding = "10px";
    resultsContainer.className = 'results';
      let score = 0;
@@ -196,7 +201,7 @@ function checkAnswers() { // this function took, like, two days for me to get it
      container.innerHTML = '';
      const summary = document.createElement('div');
      summary.className = 'summary';
-     summary.innerHTML = `<h2>Score: ${score} / ${quizData.results.length} | <button onclick="location.reload()">Play Another</button></h2>`;
-     container.appendChild(summary)
+     summary.innerHTML = `<h2>Score: ${score} / ${quizData.results.length} | <button id="play-next" onclick="location.reload()">Play Another</button></h2>`;
+     container.appendChild(summary);
      container.appendChild(resultsContainer);
 }
